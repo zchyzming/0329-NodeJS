@@ -1,6 +1,9 @@
 import Image from "next/image";
 import { CommunityKitchenHeader } from "@/app/components/CommunityKitchenHeader";
 import KitchenServerStamp from "@/app/components/KitchenServerStamp";
+import { Button } from "@/app/components/ui/button";
+import { fetchOrderingFromApi } from "@/lib/fetch-ordering-from-api";
+import { orderingServiceData } from "@/lib/ordering-service";
 
 const heroImage = {
   src: "/images/hero.jpg",
@@ -95,7 +98,10 @@ function SectionTitle({
   );
 }
 
-export default function Home() {
+export default async function Home() {
+  const orderingRemote = await fetchOrderingFromApi();
+  const order = orderingRemote ?? orderingServiceData;
+
   return (
     <div
       id="top"
@@ -116,6 +122,36 @@ export default function Home() {
 
       <main className="relative z-10 mx-auto w-full max-w-5xl flex-1 px-4 pb-14 pt-3 sm:px-6 sm:pb-16">
         <KitchenServerStamp />
+
+        <aside
+          className="animate-fade-rise mb-6 rounded-2xl border border-[#c4a077]/40 bg-[#fffdf9] px-4 py-3 text-center shadow-sm sm:px-5"
+          aria-label="订餐服务（来自接口）"
+        >
+          <p className="font-[family-name:var(--font-geist-sans)] text-[10px] font-semibold uppercase tracking-[0.2em] text-[#b45309]">
+            订餐服务 · API
+          </p>
+          <p className="mt-1 text-sm text-[#431d10]">{order.notice}</p>
+          <p className="mt-1 font-[family-name:var(--font-geist-sans)] text-[10px] text-[#8a7565]">
+            数据由{" "}
+            <code className="rounded bg-[#f0e4d8] px-1 font-mono text-[10px]">
+              GET /api/ordering
+            </code>{" "}
+            提供
+            {order.updatedAt ? (
+              <>
+                {" "}
+                · 更新{" "}
+                {new Date(order.updatedAt).toLocaleString("zh-CN", {
+                  timeZone: "Asia/Shanghai",
+                  hour: "2-digit",
+                  minute: "2-digit",
+                  month: "numeric",
+                  day: "numeric",
+                })}
+              </>
+            ) : null}
+          </p>
+        </aside>
 
         {/* 头图与实拍 */}
         <section
@@ -304,7 +340,7 @@ export default function Home() {
           <SectionTitle
             eyebrow="订餐指南"
             title="时间与地点"
-            subtitle="节假日以物业通知为准。"
+            subtitle={order.notice}
           />
           <div className="mx-auto grid max-w-3xl gap-5 sm:grid-cols-3">
             <div
@@ -315,10 +351,10 @@ export default function Home() {
                 供餐时间
               </p>
               <p className="mt-3 font-michelin text-sm font-medium text-[#2c1810]">
-                午餐 11:00 – 13:00
+                午餐 {order.lunch}
               </p>
               <p className="mt-1 font-michelin text-sm font-medium text-[#2c1810]">
-                晚餐 17:00 – 19:30
+                晚餐 {order.dinner}
               </p>
             </div>
             <div
@@ -329,8 +365,8 @@ export default function Home() {
                 取餐地点
               </p>
               <p className="mt-3 text-sm leading-snug text-[#4a3728]">
-                中央花园 <strong>6 号楼架空层</strong>
-                邻里厨房窗口；雨天可绕行地下车库 B1 指示标。
+                {order.pickupLocation}
+                {order.pickupNote ? `；${order.pickupNote}` : ""}
               </p>
             </div>
             <div
@@ -341,8 +377,7 @@ export default function Home() {
                 团体订餐
               </p>
               <p className="mt-3 text-sm leading-snug text-[#4a3728]">
-                业委会 / 楼组长会议用餐，提前{' '}
-                <strong>一天</strong> 致电预约，单笔 <strong>20 份</strong> 起订。
+                {order.groupOrder}
               </p>
             </div>
           </div>
@@ -355,12 +390,25 @@ export default function Home() {
           <p className="font-[family-name:var(--font-geist-sans)] text-[11px] font-medium uppercase tracking-[0.22em] text-[#7c6655]">
             阳光花园邻里厨房 · 物业服务中心代管
           </p>
-          <a
-            href="tel:+862112345678"
-            className="tap-shrink mt-3 inline-flex items-center justify-center rounded-full bg-gradient-to-r from-[#ea580c] to-[#c2410c] px-6 py-2.5 font-[family-name:var(--font-geist-sans)] text-sm font-semibold tabular-nums text-white shadow-[0_8px_24px_-8px_rgba(194,65,12,0.65)] transition-[filter,transform] hover:brightness-110 active:brightness-95"
-          >
-            电话：021-1234-5678
-          </a>
+          <div className="mt-4 flex flex-wrap items-center justify-center gap-3">
+            <Button
+              size="lg"
+              nativeButton={false}
+              render={<a href={`tel:${order.phoneE164.replace(/\s/g, "")}`} />}
+              className="rounded-full px-7 py-3 text-base font-[family-name:var(--font-geist-sans)] shadow-[0_8px_24px_-8px_rgba(194,65,12,0.55)]"
+            >
+              电话：{order.phoneDisplay}
+            </Button>
+            <Button
+              variant="outline"
+              size="lg"
+              nativeButton={false}
+              render={<a href="#menu" />}
+              className="rounded-full px-6 font-[family-name:var(--font-geist-sans)]"
+            >
+              今日菜谱
+            </Button>
+          </div>
           <p className="mx-auto mt-4 max-w-md text-[10px] leading-relaxed text-[#8a7565]">
             图片素材来自 Unsplash，仅作演示。替换实景请使用{" "}
             <span className="font-mono">public/images</span>。

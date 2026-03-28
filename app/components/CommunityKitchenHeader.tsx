@@ -7,6 +7,7 @@ import {
   type NavEntry,
   type NavLeaf,
 } from "@/app/community-nav";
+import { Button } from "@/app/components/ui/button";
 
 function isGroup(entry: NavEntry): entry is { label: string; children: NavLeaf[] } {
   return "children" in entry;
@@ -54,12 +55,15 @@ export function CommunityKitchenHeader() {
             <span className="font-medium text-[#b45309]">邻里厨房</span>
             <span className="hidden sm:inline"> · 本小区业主与物业共建</span>
           </p>
-          <a
-            href="tel:+862112345678"
-            className="tap-shrink rounded-full bg-[#c2410c]/10 px-3 py-1 font-[family-name:var(--font-geist-sans)] font-medium tabular-nums text-[#c2410c] transition-colors hover:bg-[#c2410c]/18"
+          <Button
+            variant="secondary"
+            size="sm"
+            nativeButton={false}
+            render={<a href="tel:+862112345678" />}
+            className="shrink-0 rounded-full font-[family-name:var(--font-geist-sans)] text-[11px] font-medium tabular-nums"
           >
             订餐 021-1234-5678
-          </a>
+          </Button>
         </div>
       </div>
 
